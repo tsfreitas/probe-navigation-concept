@@ -15,7 +15,7 @@ public class ProbeTest {
 	@Test
 	public void deveVirarParaADireita() {
 		// GIVEN
-		probe = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
+		probe = new Probe("1", new Coordinate(1, 1), DIRECTION.NORTH);
 
 		// WHEN
 		probe.right();
@@ -27,7 +27,7 @@ public class ProbeTest {
 	@Test
 	public void deveVirarParaAEsquerda() {
 		// GIVEN
-		probe = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
+		probe = new Probe("1", new Coordinate(1, 1), DIRECTION.NORTH);
 
 		// WHEN
 		probe.left();
@@ -39,7 +39,7 @@ public class ProbeTest {
 	@Test
 	public void deveAndarParaONorte() {
 		// GIVEN
-		probe = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
+		probe = new Probe("1", new Coordinate(1, 1), DIRECTION.NORTH);
 
 		// WHEN
 		probe.move();
@@ -52,7 +52,7 @@ public class ProbeTest {
 	@Test
 	public void deveAndarParaOSul() {
 		// GIVEN
-		probe = new Probe(new Coordinate(1, 1), DIRECTION.SOUTH);
+		probe = new Probe("1", new Coordinate(1, 1), DIRECTION.SOUTH);
 
 		// WHEN
 		probe.move();
@@ -64,7 +64,7 @@ public class ProbeTest {
 	@Test
 	public void deveAndarParaOLeste() {
 		// GIVEN
-		probe = new Probe(new Coordinate(1, 1), DIRECTION.EAST);
+		probe = new Probe("1", new Coordinate(1, 1), DIRECTION.EAST);
 
 		// WHEN
 		probe.move();
@@ -76,7 +76,7 @@ public class ProbeTest {
 	@Test
 	public void deveAndarParaOOeste() {
 		// GIVEN
-		probe = new Probe(new Coordinate(1, 1), DIRECTION.WEST);
+		probe = new Probe("1", new Coordinate(1, 1), DIRECTION.WEST);
 
 		// WHEN
 		probe.move();

@@ -7,14 +7,21 @@ import com.tsfreitas.probe.constants.DIRECTION;
  * extensão do terreno Created by tsfreitas on 02/05/16.
  */
 public class Probe {
+	
+	private String probeName;
 
 	private Coordinate coordinate;
 
 	private DIRECTION direction;
 
-	public Probe(Coordinate coordinate, DIRECTION direction) {
+	public Probe(String probeName, Coordinate coordinate, DIRECTION direction) {
+		this.probeName = probeName;
 		this.coordinate = coordinate;
 		this.direction = direction;
+	}
+	
+	public String getProbeName() {
+		return probeName;
 	}
 	
 	public Coordinate getCoordinate() {
