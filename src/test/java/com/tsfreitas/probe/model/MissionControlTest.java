@@ -1,5 +1,9 @@
 package com.tsfreitas.probe.model;
 
+import static com.tsfreitas.probe.constants.COMMAND.L;
+import static com.tsfreitas.probe.constants.COMMAND.M;
+import static com.tsfreitas.probe.constants.COMMAND.R;
+
 import java.util.Arrays;
 
 import org.junit.Assert;
@@ -8,20 +12,20 @@ import org.junit.Test;
 import com.tsfreitas.probe.constants.DIRECTION;
 import com.tsfreitas.probe.exception.CrashException;
 
-public class CruiseControlTest {
+public class MissionControlTest {
 
 	@Test
 	public void devePousarDuasSondas() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
-		Probe probe2 = new Probe(new Coordinate(2, 2), DIRECTION.SOUTH);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 1), DIRECTION.NORTH);
+		Probe probe2 = new Probe("probe2", new Coordinate(2, 2), DIRECTION.SOUTH);
 
 		// WHEN
-		cr.landProbe("probe1", probe1);
-		cr.landProbe("probe2", probe2);
+		cr.landProbe(probe1);
+		cr.landProbe(probe2);
 
 		// THEN
 		Assert.assertEquals(DIRECTION.NORTH, cr.getProbe("probe1").getDirection());
@@ -37,14 +41,14 @@ public class CruiseControlTest {
 	public void devePousarDuasSondasNaMesmaPosicao() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
-		Probe probe2 = new Probe(new Coordinate(1, 1), DIRECTION.SOUTH);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 1), DIRECTION.NORTH);
+		Probe probe2 = new Probe("probe2", new Coordinate(1, 1), DIRECTION.SOUTH);
 
 		// WHEN
-		cr.landProbe("probe1", probe1);
-		cr.landProbe("probe2", probe2);
+		cr.landProbe(probe1);
+		cr.landProbe(probe2);
 
 		// THEN
 		Assert.fail();
@@ -54,16 +58,16 @@ public class CruiseControlTest {
 	public void deveMandarComandoParaPrimeiraSonda() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
-		Probe probe2 = new Probe(new Coordinate(2, 2), DIRECTION.SOUTH);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 1), DIRECTION.NORTH);
+		Probe probe2 = new Probe("probe2", new Coordinate(2, 2), DIRECTION.SOUTH);
 
-		cr.landProbe("probe1", probe1);
-		cr.landProbe("probe2", probe2);
+		cr.landProbe(probe1);
+		cr.landProbe(probe2);
 
 		// WHEN
-		cr.receiveCommands("probe1", Arrays.asList("L", "M"));
+		cr.receiveCommands("probe1", Arrays.asList(L, M));
 
 		// THEN
 		Assert.assertEquals(DIRECTION.WEST, cr.getProbe("probe1").getDirection());
@@ -80,16 +84,16 @@ public class CruiseControlTest {
 	public void deveMandarComandoParaSegundaSonda() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
-		Probe probe2 = new Probe(new Coordinate(2, 2), DIRECTION.SOUTH);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 1), DIRECTION.NORTH);
+		Probe probe2 = new Probe("probe2", new Coordinate(2, 2), DIRECTION.SOUTH);
 
-		cr.landProbe("probe1", probe1);
-		cr.landProbe("probe2", probe2);
+		cr.landProbe(probe1);
+		cr.landProbe(probe2);
 
 		// WHEN
-		cr.receiveCommands("probe2", Arrays.asList("L", "M"));
+		cr.receiveCommands("probe2", Arrays.asList(L, M));
 
 		// THEN
 		Assert.assertEquals(DIRECTION.NORTH, cr.getProbe("probe1").getDirection());
@@ -105,17 +109,17 @@ public class CruiseControlTest {
 	public void deveMandarComandoParaAsDuasSondas() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 2), DIRECTION.NORTH);
-		Probe probe2 = new Probe(new Coordinate(3, 3), DIRECTION.EAST);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 2), DIRECTION.NORTH);
+		Probe probe2 = new Probe("probe2", new Coordinate(3, 3), DIRECTION.EAST);
 
-		cr.landProbe("probe1", probe1);
-		cr.landProbe("probe2", probe2);
+		cr.landProbe(probe1);
+		cr.landProbe(probe2);
 
 		// WHEN
-		cr.receiveCommands("probe1", Arrays.asList("LMLMLMLMM".split("|")));
-		cr.receiveCommands("probe2", Arrays.asList("MMRMMRMRRM".split("|")));
+		cr.receiveCommands("probe1", Arrays.asList(L, M, L, M, L, M, L, M, M));
+		cr.receiveCommands("probe2", Arrays.asList(M, M, R, M, M, R, M, R, R, M));
 
 		// THEN
 		Assert.assertEquals(DIRECTION.NORTH, cr.getProbe("probe1").getDirection());
@@ -131,16 +135,16 @@ public class CruiseControlTest {
 	public void deveMandarComandoParaSondaInexistente() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
-		Probe probe2 = new Probe(new Coordinate(2, 2), DIRECTION.SOUTH);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 1), DIRECTION.NORTH);
+		Probe probe2 = new Probe("probe2", new Coordinate(2, 2), DIRECTION.SOUTH);
 
-		cr.landProbe("probe1", probe1);
-		cr.landProbe("probe2", probe2);
+		cr.landProbe(probe1);
+		cr.landProbe(probe2);
 
 		// WHEN
-		cr.receiveCommands("probe3", Arrays.asList("L", "M"));
+		cr.receiveCommands("probe3", Arrays.asList(L, M));
 
 		// THEN
 	}
@@ -149,14 +153,14 @@ public class CruiseControlTest {
 	public void deveMandarSondaParaForaDoPlanalto() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(1, 1);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 1), DIRECTION.NORTH);
 
-		cr.landProbe("probe1", probe1);
+		cr.landProbe(probe1);
 
 		// WHEN
-		cr.receiveCommands("probe1", Arrays.asList("LMLMLMLMM".split("|")));
+		cr.receiveCommands("probe1", Arrays.asList(L, M, L, M, L, M, L, M, M));
 
 		// THEN
 		Assert.fail();
@@ -166,17 +170,17 @@ public class CruiseControlTest {
 	public void deveMandarDuasSondasParaAMesmaPosicao() throws CrashException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
-		CruiseControl cr = new CruiseControl(maxCoordinate);
+		MissionControl cr = new MissionControl(maxCoordinate);
 
-		Probe probe1 = new Probe(new Coordinate(1, 1), DIRECTION.NORTH);
-		Probe probe2 = new Probe(new Coordinate(1, 3), DIRECTION.SOUTH);
+		Probe probe1 = new Probe("probe1", new Coordinate(1, 1), DIRECTION.NORTH);
+		Probe probe2 = new Probe("probe2", new Coordinate(1, 3), DIRECTION.SOUTH);
 
-		cr.landProbe("probe1", probe1);
-		cr.landProbe("probe2", probe2);
+		cr.landProbe(probe1);
+		cr.landProbe(probe2);
 
 		// WHEN
-		cr.receiveCommands("probe1", Arrays.asList("M"));
-		cr.receiveCommands("probe2", Arrays.asList("M"));
+		cr.receiveCommands("probe1", Arrays.asList(M));
+		cr.receiveCommands("probe2", Arrays.asList(M));
 
 		// THEN
 		Assert.fail();
