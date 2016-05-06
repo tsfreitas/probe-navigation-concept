@@ -1,36 +1,71 @@
 package com.tsfreitas.probe.service;
 
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.springframework.stereotype.Service;
 
+import com.tsfreitas.probe.constants.COMMAND;
 import com.tsfreitas.probe.exception.CrashException;
+import com.tsfreitas.probe.exception.MissionException;
 import com.tsfreitas.probe.model.Coordinate;
+import com.tsfreitas.probe.model.MissionControl;
 import com.tsfreitas.probe.model.Probe;
 
 @Service
 public class MissionControlService {
+
+	private MissionControl missionControl = null;
 
 	/**
 	 * Registra uma nova missão dentro de um planalto. Apaga registros da missão
 	 * anterior
 	 */
 	public void registerMission(Coordinate maxPlateauCoordinate) {
+		missionControl = new MissionControl(maxPlateauCoordinate);
 	}
 
 	/**
 	 * Adiciona uma nova sonda no planalto
 	 * 
+	 * @return
+	 * 
 	 * @throws CrashException
 	 */
-	public void addProbe(Probe probe) throws CrashException {
+	public List<Probe> addProbe(Probe probe) throws CrashException, MissionException {
+		validate();
+		missionControl.landProbe(probe);
+
+		return missionControl.getAllProbes();
 	}
 
 	/**
 	 * Recebe os comandos para uma sonda
+	 * 
+	 * @return
 	 */
-	public void executeCommands(String probeName, List<String> commands) {
-		
+	public List<Probe> executeCommands(String probeName, String commandString) throws CrashException, MissionException {
+		validate();
+
+		List<COMMAND> commands = transformStringIntoCommands(commandString);
+
+		missionControl.receiveCommands(probeName, commands);
+
+		return missionControl.getAllProbes();
+	}
+
+	private List<COMMAND> transformStringIntoCommands(String commandString) {
+		return Stream.of(commandString.split("|"))//
+				.map(letter -> COMMAND.commandOf(letter))//
+				.filter(cmd -> cmd != null).collect(Collectors.toList());
+	}
+
+	private void validate() throws MissionException {
+		if (Objects.isNull(missionControl)) {
+			throw new MissionException();
+		}
 	}
 
 }
