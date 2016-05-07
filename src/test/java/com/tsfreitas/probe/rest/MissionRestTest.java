@@ -1,50 +1,151 @@
 package com.tsfreitas.probe.rest;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import org.hamcrest.Matchers;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.TestRestTemplate;
-import org.springframework.boot.test.WebIntegrationTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.MethodMode;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.context.WebApplicationContext;
 
 import com.tsfreitas.probe.ProbeApplication;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(ProbeApplication.class)
-@WebIntegrationTest({"server.port=9099"})
+@WebAppConfiguration
 public class MissionRestTest {
-	
-	RestTemplate restTemplate = new TestRestTemplate();
-	
-	
+
+	private MockMvc mockMvc = null;
+
+	@Autowired
+	private WebApplicationContext context;
+
+	@Before
+	public void init() {
+		mockMvc = MockMvcBuilders.webAppContextSetup(context).build();
+	}
+
 	@Test
-	public void deveIniciarMissao() {
+	public void deveIniciarMissao() throws Exception {
+		// GIVEN
+		String content = "{\"x\": 10, \"y\":15}";
+
+		MockHttpServletRequestBuilder request = post("/mission/startMission").content(content)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+		// WHEN
+		mockMvc.perform(request).andDo(MockMvcResultHandlers.print())
+				// THEN
+				.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15))
+				.andExpect(jsonPath("$.deployedProbes").isArray()).andExpect(jsonPath("$.deployedProbes").isEmpty());
+
+	}
+
+	@Test
+	public void deveDarErroPoisCoordenadaEstaIncompleta() throws Exception {
+		// GIVEN
+		String content = "{\"x\": 10}";
+
+		MockHttpServletRequestBuilder request = post("/mission/startMission").content(content)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+		// WHEN
+		mockMvc.perform(request).andDo(MockMvcResultHandlers.print())
+				// THEN
+				.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15))
+				.andExpect(jsonPath("$.deployedProbes").isArray()).andExpect(jsonPath("$.deployedProbes").isEmpty());
+	}
+
+	@Test
+	public void devePousarSondas() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String content1 = "{\"x\": 1, \"y\":1, \"direction\": \"NORTH\"}";
+		String content2 = "{\"x\": 2, \"y\":2, \"direction\": \"SOUTH\"}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request1 = post("/mission/sendProbe/{probeName}", "probe1").content(content1)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request2 = post("/mission/sendProbe/{probeName}", "probe2").content(content2)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		ResultActions actions1 = mockMvc.perform(request1).andDo(MockMvcResultHandlers.print());
+		ResultActions actions2 = mockMvc.perform(request2).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		actions1.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.deployedProbes", Matchers.hasSize(1)))
+				.andExpect(jsonPath("$.deployedProbes[0].probeName").value("probe1"))
+				.andExpect(jsonPath("$.deployedProbes[0].direction").value("NORTH"))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.x").value(1))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.y").value(1))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15));
+
+		actions2.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.deployedProbes", Matchers.hasSize(2)))
+				.andExpect(jsonPath("$.deployedProbes[0].probeName").value("probe1"))
+				.andExpect(jsonPath("$.deployedProbes[0].direction").value("NORTH"))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.x").value(1))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.y").value(1))
+				.andExpect(jsonPath("$.deployedProbes[1].probeName").value("probe2"))
+				.andExpect(jsonPath("$.deployedProbes[1].direction").value("SOUTH"))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.x").value(2))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.y").value(2))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15));
+
+	}
+
+	@Test
+	public void deveDarErroPoisPousouDuasSondasComMesmoNome() {
 		Assert.fail();
 	}
-	
-	
+
 	@Test
-	public void devePegarRelatorioDaMissao() {
+	public void deveDarErroPoisSondaNaoTemDirecao() {
 		Assert.fail();
 	}
-	
+
 	@Test
-	public void deveDarErroPoisNaoHaMissaoIniciada() {
+	@DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
+	public void deveDarErroPoisNaoHaMissaoIniciada() throws Exception {
+
+		mockMvc.perform(MockMvcRequestBuilders.get("/mission/report")).andDo(MockMvcResultHandlers.print());
+
 		Assert.fail();
 	}
-	
+
 	@Test
 	public void deveEnviarASonda() {
 		Assert.fail();
 	}
-	
+
 	@Test
 	public void deveEnviarComandoParaASonda() {
 		Assert.fail();
 	}
-	
+
 	@Test
 	public void deveFazerMissaoEmBatch() {
 		Assert.fail();
