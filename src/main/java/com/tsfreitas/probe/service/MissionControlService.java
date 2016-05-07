@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import org.springframework.stereotype.Service;
 
 import com.tsfreitas.probe.constants.COMMAND;
+import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
 import com.tsfreitas.probe.model.Coordinate;
@@ -33,8 +34,9 @@ public class MissionControlService {
 	 * @return
 	 * 
 	 * @throws CrashException
+	 * @throws AlreadyExistProbeException 
 	 */
-	public List<Probe> addProbe(Probe probe) throws CrashException, MissionNotStartedException {
+	public List<Probe> addProbe(Probe probe) throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
 		validate();
 		missionControl.landProbe(probe);
 

@@ -6,8 +6,10 @@ import static com.tsfreitas.probe.constants.COMMAND.R;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 import com.tsfreitas.probe.constants.COMMAND;
+import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
 
 /**
@@ -26,6 +28,14 @@ public class MissionControl {
 		this.maxCoordinate = maxCoordinate;
 	}
 
+	public List<Probe> getDeployedProbes() {
+		return deployedProbes;
+	}
+
+	public Coordinate getMaxCoordinate() {
+		return maxCoordinate;
+	}
+
 	/**
 	 * Pousa uma nova sonda no planalto
 	 * 
@@ -35,8 +45,13 @@ public class MissionControl {
 	 *            sonda
 	 * @throws CrashException
 	 *             Caso a sonda pouse onde outra sonda esteja
+	 * @throws AlreadyExistProbeException
 	 */
-	public void landProbe(Probe probe) throws CrashException {
+	public void landProbe(Probe probe) throws CrashException, AlreadyExistProbeException {
+		if (deployedProbes.stream().filter(probeWithName(probe.getProbeName())).findFirst().isPresent()) {
+			throw new AlreadyExistProbeException();
+		}
+
 		deployedProbes.add(probe);
 		validateCrash(probe);
 	}
@@ -60,20 +75,17 @@ public class MissionControl {
 
 	/**
 	 * Recupera a sonda com o nome dado ou NullPointer caso não ache
+	 * 
 	 * @param probeName
 	 * @return sonda encontrada
 	 */
 	public Probe getProbe(String probeName) {
-		return deployedProbes.stream().
-				filter(probe -> {
-					return probe.getProbeName().equals(probeName);
-		})
-				.findFirst()
+		return deployedProbes.stream().filter(probeWithName(probeName)).findFirst()
 				.orElseThrow(() -> new NullPointerException(String.format("Sonda `%s` inexistente", probeName)));
 	}
 
-	public List<Probe> getAllProbes() {
-		return deployedProbes;
+	private Predicate<Probe> probeWithName(String name) {
+		return probe -> probe.getProbeName().equals(name);
 	}
 
 	private void validateCrash(Probe probe) throws CrashException {
