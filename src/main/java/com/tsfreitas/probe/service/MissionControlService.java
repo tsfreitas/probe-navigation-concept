@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
 
 import com.tsfreitas.probe.constants.COMMAND;
 import com.tsfreitas.probe.exception.CrashException;
-import com.tsfreitas.probe.exception.MissionException;
+import com.tsfreitas.probe.exception.MissionNotStartedException;
 import com.tsfreitas.probe.model.Coordinate;
 import com.tsfreitas.probe.model.MissionControl;
 import com.tsfreitas.probe.model.Probe;
@@ -34,11 +34,11 @@ public class MissionControlService {
 	 * 
 	 * @throws CrashException
 	 */
-	public List<Probe> addProbe(Probe probe) throws CrashException, MissionException {
+	public List<Probe> addProbe(Probe probe) throws CrashException, MissionNotStartedException {
 		validate();
 		missionControl.landProbe(probe);
 
-		return missionControl.getAllProbes();
+		return missionControl.getDeployedProbes();
 	}
 
 	/**
@@ -46,14 +46,19 @@ public class MissionControlService {
 	 * 
 	 * @return
 	 */
-	public List<Probe> executeCommands(String probeName, String commandString) throws CrashException, MissionException {
+	public List<Probe> executeCommands(String probeName, String commandString) throws CrashException, MissionNotStartedException {
 		validate();
 
 		List<COMMAND> commands = transformStringIntoCommands(commandString);
 
 		missionControl.receiveCommands(probeName, commands);
 
-		return missionControl.getAllProbes();
+		return missionControl.getDeployedProbes();
+	}
+	
+	public MissionControl getMissionControl() throws MissionNotStartedException {
+		validate();
+		return missionControl;
 	}
 
 	private List<COMMAND> transformStringIntoCommands(String commandString) {
@@ -62,9 +67,9 @@ public class MissionControlService {
 				.filter(cmd -> cmd != null).collect(Collectors.toList());
 	}
 
-	private void validate() throws MissionException {
+	private void validate() throws MissionNotStartedException {
 		if (Objects.isNull(missionControl)) {
-			throw new MissionException();
+			throw new MissionNotStartedException();
 		}
 	}
 
