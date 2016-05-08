@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
+import com.tsfreitas.probe.exception.CrashException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
 import com.tsfreitas.probe.exception.ProbeNotExistsException;
 
@@ -32,6 +33,14 @@ public class RestExceptionHandler {
 	public ErrorInfo alreadyExistProbeException(AlreadyExistProbeException ex) {
 		String message = "Probe already exists";
 		return new ErrorInfo("AlreadyExistProbeException", message);
+	}
+	
+	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+	@ExceptionHandler(CrashException.class)
+	@ResponseBody
+	public ErrorInfo crashException(CrashException ex) {
+		String message = "The probe has crashed. Abort mission!!";
+		return new ErrorInfo("CrashException", message);
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

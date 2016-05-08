@@ -1,12 +1,13 @@
 package com.tsfreitas.probe.rest;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.hamcrest.Matchers;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +21,6 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -85,10 +85,10 @@ public class MissionRestTest {
 		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
-		MockHttpServletRequestBuilder request1 = post("/mission/sendProbe/{probeName}", "probe1").content(content1)
+		MockHttpServletRequestBuilder request1 = post("/mission/probe/{probeName}/send", "probe1").content(content1)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
-		MockHttpServletRequestBuilder request2 = post("/mission/sendProbe/{probeName}", "probe2").content(content2)
+		MockHttpServletRequestBuilder request2 = post("/mission/probe/{probeName}/send", "probe2").content(content2)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
 		// WHEN
@@ -129,10 +129,10 @@ public class MissionRestTest {
 		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
-		MockHttpServletRequestBuilder request1 = post("/mission/sendProbe/{probeName}", "probe1").content(content1)
+		MockHttpServletRequestBuilder request1 = post("/mission/probe/{probeName}/send", "probe1").content(content1)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
-		MockHttpServletRequestBuilder request2 = post("/mission/sendProbe/{probeName}", "probe1").content(content2)
+		MockHttpServletRequestBuilder request2 = post("/mission/probe/{probeName}/send", "probe1").content(content2)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
 		// WHEN
@@ -160,7 +160,7 @@ public class MissionRestTest {
 		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
-		MockHttpServletRequestBuilder request1 = post("/mission/sendProbe/{probeName}", "probe1").content(content1)
+		MockHttpServletRequestBuilder request1 = post("/mission/probe/{probeName}/send", "probe1").content(content1)
 				.contentType(MediaType.APPLICATION_JSON_VALUE);
 
 		// WHEN
@@ -180,10 +180,9 @@ public class MissionRestTest {
 	@DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
 	public void deveDarErroPoisNaoHaMissaoIniciada() throws Exception {
 		// GIVEN
-		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/mission/report");
 
 		// WHEN
-		ResultActions response = mockMvc.perform(request).andDo(MockMvcResultHandlers.print());
+		ResultActions response = mockMvc.perform(get("/mission/report")).andDo(MockMvcResultHandlers.print());
 
 		// THEN
 		response.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -194,18 +193,144 @@ public class MissionRestTest {
 	}
 
 	@Test
-	public void deveEnviarASonda() {
-		Assert.fail();
+	public void deveMostrarRelatorioDaMissao() {
+		throw new UnsupportedOperationException();
 	}
 
 	@Test
-	public void deveEnviarComandoParaASonda() {
-		Assert.fail();
+	public void deveVerCoordenadasDaSonda() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Test
+	public void deveDarErroAoVerCoordenadaPoisSondaNaoExiste() {
+		throw new UnsupportedOperationException();
+	}
+
+	@Test
+	public void deveEnviarComandoParaASonda() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String contentLandProbe1 = "{\"x\": 1, \"y\":1, \"direction\": \"NORTH\"}";
+		String contentLandProbe2 = "{\"x\": 2, \"y\":2, \"direction\": \"NORTH\"}";
+		String contentSendCommandProbe1 = "{\"commands\":\"RMMLMRM\"}";
+		String contentSendCommandProbe2 = "{\"commands\":\"MMMM\"}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder landProbe1 = post("/mission/probe/{probeName}/send", "probe1")
+				.content(contentLandProbe1).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder landProbe2 = post("/mission/probe/{probeName}/send", "probe2")
+				.content(contentLandProbe2).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder commandsProbe1 = put("/mission/probe/{probeName}/commands", "probe1")
+				.content(contentSendCommandProbe1).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder commandsProbe2 = put("/mission/probe/{probeName}/commands", "probe2")
+				.content(contentSendCommandProbe2).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		mockMvc.perform(landProbe1);
+		mockMvc.perform(landProbe2);
+		ResultActions action1 = mockMvc.perform(commandsProbe1).andDo(MockMvcResultHandlers.print());
+		ResultActions action2 = mockMvc.perform(commandsProbe2).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action1.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.deployedProbes", Matchers.hasSize(2)))
+				.andExpect(jsonPath("$.deployedProbes[0].probeName").value("probe1"))
+				.andExpect(jsonPath("$.deployedProbes[0].direction").value("EAST"))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.x").value(4))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.y").value(2))
+				.andExpect(jsonPath("$.deployedProbes[1].probeName").value("probe2"))
+				.andExpect(jsonPath("$.deployedProbes[1].direction").value("NORTH"))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.x").value(2))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.y").value(2))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15));
+
+		action2.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.deployedProbes", Matchers.hasSize(2)))
+				.andExpect(jsonPath("$.deployedProbes[0].probeName").value("probe1"))
+				.andExpect(jsonPath("$.deployedProbes[0].direction").value("EAST"))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.x").value(4))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.y").value(2))
+				.andExpect(jsonPath("$.deployedProbes[1].probeName").value("probe2"))
+				.andExpect(jsonPath("$.deployedProbes[1].direction").value("NORTH"))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.x").value(2))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.y").value(6))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15));
+
+	}
+
+	@Test
+	public void deveFalharPoisComandoFezSondaCairDoPlanalto() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String contentLandProbe1 = "{\"x\": 10, \"y\":13, \"direction\": \"NORTH\"}";
+		String contentSendCommandProbe1 = "{\"commands\":\"MMM\"}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder landProbe1 = post("/mission/probe/{probeName}/send", "probe1")
+				.content(contentLandProbe1).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder commandsProbe1 = put("/mission/probe/{probeName}/commands", "probe1")
+				.content(contentSendCommandProbe1).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		mockMvc.perform(landProbe1);
+		ResultActions action1 = mockMvc.perform(commandsProbe1).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action1.andExpect(status().isInternalServerError()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("CrashException"))
+				.andExpect(jsonPath("$.detailedMessage").value("The probe has crashed. Abort mission!!"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
+
+	}
+
+	@Test
+	public void deveFalharPoisComandoFezSondaColidirComOutraSonda() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String contentLandProbe1 = "{\"x\": 1, \"y\":1, \"direction\": \"NORTH\"}";
+		String contentLandProbe2 = "{\"x\": 1, \"y\":2, \"direction\": \"NORTH\"}";
+		String contentSendCommandProbe1 = "{\"commands\":\"M\"}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder landProbe1 = post("/mission/probe/{probeName}/send", "probe1")
+				.content(contentLandProbe1).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder landProbe2 = post("/mission/probe/{probeName}/send", "probe2")
+				.content(contentLandProbe2).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder commandsProbe1 = put("/mission/probe/{probeName}/commands", "probe1")
+				.content(contentSendCommandProbe1).contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		mockMvc.perform(landProbe1);
+		mockMvc.perform(landProbe2);
+		ResultActions action1 = mockMvc.perform(commandsProbe1).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action1.andExpect(status().isInternalServerError()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("CrashException"))
+				.andExpect(jsonPath("$.detailedMessage").value("The probe has crashed. Abort mission!!"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
+
 	}
 
 	@Test
 	public void deveFazerMissaoEmBatch() {
-		Assert.fail();
+		throw new UnsupportedOperationException();
 	}
 
 }

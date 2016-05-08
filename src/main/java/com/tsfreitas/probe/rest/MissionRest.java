@@ -18,6 +18,7 @@ import com.tsfreitas.probe.constants.DIRECTION;
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
+import com.tsfreitas.probe.exception.ProbeNotExistsException;
 import com.tsfreitas.probe.model.Coordinate;
 import com.tsfreitas.probe.model.MissionControl;
 import com.tsfreitas.probe.model.Probe;
@@ -63,6 +64,16 @@ public class MissionRest {
 	}
 
 	/**
+	 * Mostra posição da sonda
+	 * 
+	 * @throws ProbeNotExistsException
+	 */
+	@RequestMapping("probe/{probeName}")
+	public Probe showProbe(@PathVariable String probeName) throws ProbeNotExistsException {
+		return service.getProbe(probeName);
+	}
+
+	/**
 	 * Envia uma sonda para o planalto
 	 * 
 	 * @return
@@ -70,7 +81,7 @@ public class MissionRest {
 	 * @throws MissionNotStartedException
 	 * @throws CrashException
 	 */
-	@RequestMapping(value = "sendProbe/{probeName}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
+	@RequestMapping(value = "probe/{probeName}/send", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public MissionControl sendProbe(@PathVariable String probeName, @Valid @RequestBody ProbeDTO body)
 			throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
@@ -84,10 +95,20 @@ public class MissionRest {
 
 	/**
 	 * Envia comandos para uma sonda
+	 * 
+	 * @return
+	 * @throws ProbeNotExistsException
+	 * @throws MissionNotStartedException
+	 * @throws CrashException
 	 */
-	@RequestMapping("sendCommand")
-	public void sendCommand() {
-		throw new UnsupportedOperationException();
+	@RequestMapping(value = "probe/{probeName}/commands", method = RequestMethod.PUT, consumes = MediaType.APPLICATION_JSON_VALUE)
+	public MissionControl sendCommand(@PathVariable String probeName, @Valid @RequestBody CommandsDTO body)
+			throws CrashException, MissionNotStartedException, ProbeNotExistsException {
+
+		service.executeCommands(probeName, body.getCommands());
+
+		return report();
+
 	}
 
 	/**
@@ -98,6 +119,15 @@ public class MissionRest {
 		throw new UnsupportedOperationException();
 	}
 
+}
+
+class CommandsDTO {
+	@NotNull
+	private String commands;
+
+	public String getCommands() {
+		return commands;
+	}
 }
 
 class CoordinateDTO {
