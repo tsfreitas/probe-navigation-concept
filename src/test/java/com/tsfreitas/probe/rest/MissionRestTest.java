@@ -177,37 +177,6 @@ public class MissionRestTest {
 	}
 
 	@Test
-	@DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
-	public void deveDarErroPoisNaoHaMissaoIniciada() throws Exception {
-		// GIVEN
-
-		// WHEN
-		ResultActions response = mockMvc.perform(get("/mission/report")).andDo(MockMvcResultHandlers.print());
-
-		// THEN
-		response.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.exception").value("MissionNotStartedException"))
-				.andExpect(jsonPath("$.detailedMessage")
-						.value("Mission not started. First call POST /mission/startMission"))
-				.andExpect(jsonPath("$.fieldErros").isEmpty());
-	}
-
-	@Test
-	public void deveMostrarRelatorioDaMissao() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Test
-	public void deveVerCoordenadasDaSonda() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Test
-	public void deveDarErroAoVerCoordenadaPoisSondaNaoExiste() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Test
 	public void deveEnviarComandoParaASonda() throws Exception {
 		// GIVEN
 		String contentMission = "{\"x\": 10, \"y\":15}";
@@ -324,6 +293,101 @@ public class MissionRestTest {
 		action1.andExpect(status().isInternalServerError()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.exception").value("CrashException"))
 				.andExpect(jsonPath("$.detailedMessage").value("The probe has crashed. Abort mission!!"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
+
+	}
+
+	@Test
+	@DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
+	public void deveDarErroPoisNaoHaMissaoIniciada() throws Exception {
+		// GIVEN
+
+		// WHEN
+		ResultActions response = mockMvc.perform(get("/mission/report")).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		response.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("MissionNotStartedException"))
+				.andExpect(jsonPath("$.detailedMessage")
+						.value("Mission not started. First call POST /mission/startMission"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
+	}
+
+	@Test
+	public void deveMostrarRelatorioDaMissao() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String content1 = "{\"x\": 1, \"y\":1, \"direction\": \"NORTH\"}";
+		String content2 = "{\"x\": 2, \"y\":2, \"direction\": \"SOUTH\"}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request1 = post("/mission/probe/{probeName}/send", "probe1").content(content1)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request2 = post("/mission/probe/{probeName}/send", "probe2").content(content2)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		mockMvc.perform(request1);
+		mockMvc.perform(request2);
+		ResultActions action = mockMvc.perform(get("/mission/report")).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.deployedProbes", Matchers.hasSize(2)))
+				.andExpect(jsonPath("$.deployedProbes[0].probeName").value("probe1"))
+				.andExpect(jsonPath("$.deployedProbes[0].direction").value("NORTH"))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.x").value(1))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.y").value(1))
+				.andExpect(jsonPath("$.deployedProbes[1].probeName").value("probe2"))
+				.andExpect(jsonPath("$.deployedProbes[1].direction").value("SOUTH"))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.x").value(2))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.y").value(2))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15));
+	}
+
+	@Test
+	public void deveVerCoordenadasDaSonda() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String content1 = "{\"x\": 1, \"y\":1, \"direction\": \"NORTH\"}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request1 = post("/mission/probe/{probeName}/send", "probe1").content(content1)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		mockMvc.perform(request1);
+		ResultActions action = mockMvc.perform(get("/mission/probe/probe1")).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.probeName").value("probe1")).andExpect(jsonPath("$.direction").value("NORTH"))
+				.andExpect(jsonPath("$.coordinate.x").value(1)).andExpect(jsonPath("$.coordinate.y").value(1));
+	}
+
+	@Test
+	public void deveDarErroAoVerCoordenadaPoisSondaNaoExiste() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		ResultActions action = mockMvc.perform(get("/mission/probe/probe1")).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("AlreadyExistProbeException"))
+				.andExpect(jsonPath("$.detailedMessage").value("Probe probe1 not exists"))
 				.andExpect(jsonPath("$.fieldErros").isEmpty());
 
 	}
