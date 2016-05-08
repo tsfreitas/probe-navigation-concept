@@ -12,11 +12,12 @@ import org.junit.Test;
 import com.tsfreitas.probe.constants.DIRECTION;
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
+import com.tsfreitas.probe.exception.ProbeNotExistsException;
 
 public class MissionControlTest {
 
 	@Test
-	public void devePousarDuasSondas() throws CrashException, AlreadyExistProbeException {
+	public void devePousarDuasSondas() throws CrashException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
 		MissionControl cr = new MissionControl(maxCoordinate);
@@ -88,7 +89,7 @@ public class MissionControlTest {
 	}
 
 	@Test
-	public void deveMandarComandoParaPrimeiraSonda() throws CrashException, AlreadyExistProbeException {
+	public void deveMandarComandoParaPrimeiraSonda() throws CrashException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
 		MissionControl cr = new MissionControl(maxCoordinate);
@@ -114,7 +115,7 @@ public class MissionControlTest {
 	}
 
 	@Test
-	public void deveMandarComandoParaSegundaSonda() throws CrashException, AlreadyExistProbeException {
+	public void deveMandarComandoParaSegundaSonda() throws CrashException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
 		MissionControl cr = new MissionControl(maxCoordinate);
@@ -139,7 +140,7 @@ public class MissionControlTest {
 	}
 
 	@Test
-	public void deveMandarComandoParaAsDuasSondas() throws CrashException, AlreadyExistProbeException {
+	public void deveMandarComandoParaAsDuasSondas() throws CrashException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
 		MissionControl cr = new MissionControl(maxCoordinate);
@@ -164,8 +165,8 @@ public class MissionControlTest {
 		Assert.assertEquals(1, cr.getProbe("probe2").getCoordinate().getY());
 	}
 
-	@Test(expected = NullPointerException.class)
-	public void deveMandarComandoParaSondaInexistente() throws CrashException, AlreadyExistProbeException {
+	@Test(expected = ProbeNotExistsException.class)
+	public void deveMandarComandoParaSondaInexistente() throws CrashException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
 		MissionControl cr = new MissionControl(maxCoordinate);
@@ -183,7 +184,7 @@ public class MissionControlTest {
 	}
 
 	@Test(expected = CrashException.class)
-	public void deveMandarSondaParaForaDoPlanalto() throws CrashException, AlreadyExistProbeException {
+	public void deveMandarSondaParaForaDoPlanalto() throws CrashException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(1, 1);
 		MissionControl cr = new MissionControl(maxCoordinate);
@@ -200,7 +201,7 @@ public class MissionControlTest {
 	}
 
 	@Test(expected = CrashException.class)
-	public void deveMandarDuasSondasParaAMesmaPosicao() throws CrashException, AlreadyExistProbeException {
+	public void deveMandarDuasSondasParaAMesmaPosicao() throws CrashException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		Coordinate maxCoordinate = new Coordinate(5, 5);
 		MissionControl cr = new MissionControl(maxCoordinate);

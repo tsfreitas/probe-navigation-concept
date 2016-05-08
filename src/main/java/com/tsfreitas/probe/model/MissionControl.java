@@ -11,6 +11,7 @@ import java.util.function.Predicate;
 import com.tsfreitas.probe.constants.COMMAND;
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
+import com.tsfreitas.probe.exception.ProbeNotExistsException;
 
 /**
  * Controle da missão, controla as sondas e tem conhecimento do terreno a ser
@@ -62,8 +63,10 @@ public class MissionControl {
 	 * @param probeName
 	 * @param commands
 	 * @throws CrashException
+	 * @throws ProbeNotExistsException
 	 */
-	public void receiveCommands(String probeName, List<COMMAND> commands) throws CrashException {
+	public void receiveCommands(String probeName, List<COMMAND> commands)
+			throws CrashException, ProbeNotExistsException {
 		// Recupera sonda
 		Probe probe = getProbe(probeName);
 
@@ -79,9 +82,9 @@ public class MissionControl {
 	 * @param probeName
 	 * @return sonda encontrada
 	 */
-	public Probe getProbe(String probeName) {
+	public Probe getProbe(String probeName) throws ProbeNotExistsException {
 		return deployedProbes.stream().filter(probeWithName(probeName)).findFirst()
-				.orElseThrow(() -> new NullPointerException(String.format("Sonda `%s` inexistente", probeName)));
+				.orElseThrow(() -> new ProbeNotExistsException(probeName));
 	}
 
 	private Predicate<Probe> probeWithName(String name) {

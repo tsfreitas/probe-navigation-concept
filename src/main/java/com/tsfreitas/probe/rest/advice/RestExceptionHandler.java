@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
+import com.tsfreitas.probe.exception.ProbeNotExistsException;
 
 @ControllerAdvice(annotations = RestController.class)
 public class RestExceptionHandler {
@@ -31,6 +32,14 @@ public class RestExceptionHandler {
 	public ErrorInfo alreadyExistProbeException(AlreadyExistProbeException ex) {
 		String message = "Probe already exists";
 		return new ErrorInfo("AlreadyExistProbeException", message);
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(ProbeNotExistsException.class)
+	@ResponseBody
+	public ErrorInfo ProbeNotExistsException(ProbeNotExistsException ex) {
+		String message = "Probe %s not exists";
+		return new ErrorInfo("AlreadyExistProbeException", String.format(message, ex.getProbeName()));
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)

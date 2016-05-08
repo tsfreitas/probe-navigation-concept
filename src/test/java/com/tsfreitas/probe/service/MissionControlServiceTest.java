@@ -9,6 +9,7 @@ import com.tsfreitas.probe.constants.DIRECTION;
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
+import com.tsfreitas.probe.exception.ProbeNotExistsException;
 import com.tsfreitas.probe.model.Coordinate;
 import com.tsfreitas.probe.model.MissionControl;
 import com.tsfreitas.probe.model.Probe;
@@ -55,7 +56,7 @@ public class MissionControlServiceTest {
 	}
 
 	@Test
-	public void deveExecutarComandos() throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
+	public void deveExecutarComandos() throws CrashException, MissionNotStartedException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		MissionControlService service = new MissionControlService();
 		service.registerMission(new Coordinate(5, 5));
@@ -91,7 +92,7 @@ public class MissionControlServiceTest {
 	}
 
 	@Test(expected = MissionNotStartedException.class)
-	public void deveDarErroAoExecutarComandoDeSondaSemRegistrarMissao() throws CrashException, MissionNotStartedException {
+	public void deveDarErroAoExecutarComandoDeSondaSemRegistrarMissao() throws CrashException, MissionNotStartedException, ProbeNotExistsException {
 		// GIVEN
 		MissionControlService service = new MissionControlService();
 
@@ -103,7 +104,8 @@ public class MissionControlServiceTest {
 	}
 
 	@Test(expected = MissionNotStartedException.class)
-	public void deveDarErroAoExecutarComandoDeSondaInexistente() throws CrashException, MissionNotStartedException {
+	public void deveDarErroAoExecutarComandoDeSondaInexistente()
+			throws CrashException, MissionNotStartedException, ProbeNotExistsException {
 		// GIVEN
 		MissionControlService service = new MissionControlService();
 
@@ -116,7 +118,7 @@ public class MissionControlServiceTest {
 
 	@Test
 	public void deveIgnorarComandoInexistente()
-			throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
+			throws CrashException, MissionNotStartedException, AlreadyExistProbeException, ProbeNotExistsException {
 		// GIVEN
 		MissionControlService service = new MissionControlService();
 		service.registerMission(new Coordinate(5, 5));

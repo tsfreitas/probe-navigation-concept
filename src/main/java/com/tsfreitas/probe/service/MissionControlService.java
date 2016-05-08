@@ -11,6 +11,7 @@ import com.tsfreitas.probe.constants.COMMAND;
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
+import com.tsfreitas.probe.exception.ProbeNotExistsException;
 import com.tsfreitas.probe.model.Coordinate;
 import com.tsfreitas.probe.model.MissionControl;
 import com.tsfreitas.probe.model.Probe;
@@ -34,9 +35,10 @@ public class MissionControlService {
 	 * @return
 	 * 
 	 * @throws CrashException
-	 * @throws AlreadyExistProbeException 
+	 * @throws AlreadyExistProbeException
 	 */
-	public List<Probe> addProbe(Probe probe) throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
+	public List<Probe> addProbe(Probe probe)
+			throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
 		validate();
 		missionControl.landProbe(probe);
 
@@ -47,8 +49,10 @@ public class MissionControlService {
 	 * Recebe os comandos para uma sonda
 	 * 
 	 * @return
+	 * @throws ProbeNotExistsException
 	 */
-	public List<Probe> executeCommands(String probeName, String commandString) throws CrashException, MissionNotStartedException {
+	public List<Probe> executeCommands(String probeName, String commandString)
+			throws CrashException, MissionNotStartedException, ProbeNotExistsException {
 		validate();
 
 		List<COMMAND> commands = transformStringIntoCommands(commandString);
@@ -57,10 +61,14 @@ public class MissionControlService {
 
 		return missionControl.getDeployedProbes();
 	}
-	
+
 	public MissionControl getMissionControl() throws MissionNotStartedException {
 		validate();
 		return missionControl;
+	}
+
+	public Probe getProbe(String probeName) throws ProbeNotExistsException {
+		return missionControl.getProbe(probeName);
 	}
 
 	private List<COMMAND> transformStringIntoCommands(String commandString) {
