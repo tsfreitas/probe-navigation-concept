@@ -18,6 +18,7 @@ import com.tsfreitas.probe.constants.DIRECTION;
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
+import com.tsfreitas.probe.exception.OfflineCommandsException;
 import com.tsfreitas.probe.exception.ProbeNotExistsException;
 import com.tsfreitas.probe.model.Coordinate;
 import com.tsfreitas.probe.model.MissionControl;
@@ -109,10 +110,59 @@ public class MissionRest {
 
 	/**
 	 * Manda todos os dados da missão de uma única vez
+	 * 
+	 * @throws MissionNotStartedException
+	 * @throws AlreadyExistProbeException
+	 * @throws CrashException
+	 * @throws ProbeNotExistsException
+	 * @throws OfflineCommandsException
 	 */
-	@RequestMapping("batchMission")
-	public void batchMission() {
-		throw new UnsupportedOperationException();
+	@RequestMapping(value = "offline", method = RequestMethod.POST, consumes = MediaType.TEXT_PLAIN_VALUE)
+	public MissionControl batchMission(@RequestBody String body) throws MissionNotStartedException, CrashException,
+			AlreadyExistProbeException, ProbeNotExistsException, OfflineCommandsException {
+
+		try {
+			String[] split = body.split("\n");
+
+			// Cria planalto
+			Coordinate plateauCoordinates = createCoordinateFromString(split[0]);
+			service.registerMission(plateauCoordinates);
+
+			// Recupe posição inicial e comandos de cada sonda
+			int line = 1;
+			int probeNumber = 1;
+			while (line < split.length) {
+				// Adiciona sonda
+				String probeName = "probe" + probeNumber++;
+				Probe probe = createProbeFromStrings(probeName, split[line++]);
+				service.addProbe(probe);
+
+				// Executa comandos
+				service.executeCommands(probeName, split[line++]);
+
+			}
+		} catch (NumberFormatException | NullPointerException | ArrayIndexOutOfBoundsException ex) {
+			throw new OfflineCommandsException();
+		}
+
+		return report();
+	}
+
+	private Probe createProbeFromStrings(String probeName, String commandString) {
+		String[] split = commandString.split(" ");
+		Coordinate coordinate = createCoordinateFromString(commandString);
+
+		DIRECTION direction = DIRECTION.getDirectionFromAbbreviation(split[2].trim());
+
+		return new Probe(probeName, coordinate, direction);
+	}
+
+	private Coordinate createCoordinateFromString(String commandString) {
+		String[] split = commandString.split(" ");
+		Integer x = Integer.valueOf(split[0].trim());
+		Integer y = Integer.valueOf(split[1].trim());
+
+		return new Coordinate(x, y);
 	}
 
 	private Coordinate createCoordinate(CoordinateDTO dto) {

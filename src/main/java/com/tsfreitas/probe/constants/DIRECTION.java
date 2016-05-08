@@ -7,14 +7,17 @@ import com.tsfreitas.probe.model.Coordinate;
  */
 public enum DIRECTION {
 
-	NORTH(0, 1), EAST(1, 0), SOUTH(0, -1), WEST(-1, 0);
+	NORTH("N", 0, 1), EAST("E", 1, 0), SOUTH("S", 0, -1), WEST("W", -1, 0);
 
 	private Coordinate coordinate;
 
-	DIRECTION(int x, int y) {
-		this.coordinate =new Coordinate(x,y);
+	private String abbreviation;
+
+	DIRECTION(String abbreviation, int x, int y) {
+		this.abbreviation = abbreviation;
+		this.coordinate = new Coordinate(x, y);
 	}
-	
+
 	public Coordinate getCoordinate() {
 		return coordinate;
 	}
@@ -29,10 +32,20 @@ public enum DIRECTION {
 
 	public DIRECTION previous() {
 		int position = this.ordinal() - 1;
-		
-		int previousPos = position < 0 ? DIRECTION.values().length -1 : position;
-		
+
+		int previousPos = position < 0 ? DIRECTION.values().length - 1 : position;
+
 		return DIRECTION.values()[previousPos];
+	}
+
+	public static DIRECTION getDirectionFromAbbreviation(String abbreviation) {
+		for (DIRECTION direction : DIRECTION.values()) {
+			if (direction.abbreviation.equalsIgnoreCase(abbreviation)) {
+				return direction;
+			}
+		}
+
+		return null;
 	}
 
 }

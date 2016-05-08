@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.CrashException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
+import com.tsfreitas.probe.exception.OfflineCommandsException;
 import com.tsfreitas.probe.exception.ProbeNotExistsException;
 
 @ControllerAdvice(annotations = RestController.class)
@@ -35,6 +36,14 @@ public class RestExceptionHandler {
 		return new ErrorInfo("AlreadyExistProbeException", message);
 	}
 	
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(OfflineCommandsException.class)
+	@ResponseBody
+	public ErrorInfo offlineCommandsException(OfflineCommandsException ex) {
+		String message = "Offline command not accepted. Follow this pattern: '%s'";
+		return new ErrorInfo("OfflineCommandsException", String.format(message, ex.getPattern()));
+	}
+	
 	@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
 	@ExceptionHandler(CrashException.class)
 	@ResponseBody
@@ -47,7 +56,7 @@ public class RestExceptionHandler {
 	@ExceptionHandler(ProbeNotExistsException.class)
 	@ResponseBody
 	public ErrorInfo ProbeNotExistsException(ProbeNotExistsException ex) {
-		String message = "Probe %s not exists";
+		String message = "Probe '%s' not exists";
 		return new ErrorInfo("AlreadyExistProbeException", String.format(message, ex.getProbeName()));
 	}
 

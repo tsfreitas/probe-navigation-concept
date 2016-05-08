@@ -387,14 +387,92 @@ public class MissionRestTest {
 		// THEN
 		action.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(jsonPath("$.exception").value("AlreadyExistProbeException"))
-				.andExpect(jsonPath("$.detailedMessage").value("Probe probe1 not exists"))
+				.andExpect(jsonPath("$.detailedMessage").value("Probe 'probe1' not exists"))
 				.andExpect(jsonPath("$.fieldErros").isEmpty());
 
 	}
 
 	@Test
-	public void deveFazerMissaoEmBatch() {
-		throw new UnsupportedOperationException();
+	public void deveFazerMissaoEmBatch() throws Exception {
+		// GIVEN
+		String contentMission = "5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM\n";
+
+		MockHttpServletRequestBuilder offlineRequest = post("/mission/offline").content(contentMission)
+				.contentType(MediaType.TEXT_PLAIN);
+
+		// WHEN
+		ResultActions action = mockMvc.perform(offlineRequest).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action.andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.deployedProbes", Matchers.hasSize(2)))
+				.andExpect(jsonPath("$.deployedProbes[0].probeName").value("probe1"))
+				.andExpect(jsonPath("$.deployedProbes[0].direction").value("NORTH"))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.x").value(1))
+				.andExpect(jsonPath("$.deployedProbes[0].coordinate.y").value(3))
+				.andExpect(jsonPath("$.deployedProbes[1].probeName").value("probe2"))
+				.andExpect(jsonPath("$.deployedProbes[1].direction").value("EAST"))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.x").value(5))
+				.andExpect(jsonPath("$.deployedProbes[1].coordinate.y").value(1))
+				.andExpect(jsonPath("$.maxCoordinate.x").value(5)).andExpect(jsonPath("$.maxCoordinate.y").value(5));
+
+	}
+
+	@Test
+	public void deveErrarCoordenadasEmBatch() throws Exception {
+		// GIVEN
+		String contentMission = "5 K\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM\n";
+
+		MockHttpServletRequestBuilder offlineRequest = post("/mission/offline").content(contentMission)
+				.contentType(MediaType.TEXT_PLAIN);
+
+		// WHEN
+		ResultActions action = mockMvc.perform(offlineRequest).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("OfflineCommandsException"))
+				.andExpect(jsonPath("$.detailedMessage")
+						.value("Offline command not accepted. Follow this pattern: '5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM\n'"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
+	}
+
+	@Test
+	public void deveErrarDirecaoEmBatch() throws Exception {
+		// GIVEN
+		String contentMission = "5 5\n1 2 P\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM\n";
+
+		MockHttpServletRequestBuilder offlineRequest = post("/mission/offline").content(contentMission)
+				.contentType(MediaType.TEXT_PLAIN);
+
+		// WHEN
+		ResultActions action = mockMvc.perform(offlineRequest).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("OfflineCommandsException"))
+				.andExpect(jsonPath("$.detailedMessage")
+						.value("Offline command not accepted. Follow this pattern: '5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM\n'"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
+	}
+
+	@Test
+	public void deveNaoEnviarComandoDeSondaEmBatch() throws Exception {
+		// GIVEN
+		String contentMission = "5 5\n1 2 N\nLMLMLMLMM\n3 3 E\n";
+
+		MockHttpServletRequestBuilder offlineRequest = post("/mission/offline").content(contentMission)
+				.contentType(MediaType.TEXT_PLAIN);
+
+		// WHEN
+		ResultActions action = mockMvc.perform(offlineRequest).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		action.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("OfflineCommandsException"))
+				.andExpect(jsonPath("$.detailedMessage")
+						.value("Offline command not accepted. Follow this pattern: '5 5\n1 2 N\nLMLMLMLMM\n3 3 E\nMMRMMRMRRM\n'"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
 	}
 
 }
