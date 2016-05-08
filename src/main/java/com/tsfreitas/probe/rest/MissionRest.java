@@ -55,11 +55,8 @@ public class MissionRest {
 	@RequestMapping(value = "startMission", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public MissionControl startMission(@Valid @RequestBody CoordinateDTO body) throws MissionNotStartedException {
-		// Transforma
-		Coordinate maxPlateauCoordinate = new Coordinate(body.getX(), body.getY());
+		service.registerMission(createCoordinate(body));
 
-		// Executa ação
-		service.registerMission(maxPlateauCoordinate);
 		return report();
 	}
 
@@ -85,9 +82,8 @@ public class MissionRest {
 	@ResponseStatus(HttpStatus.CREATED)
 	public MissionControl sendProbe(@PathVariable String probeName, @Valid @RequestBody ProbeDTO body)
 			throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
-		Coordinate coordinate = new Coordinate(body.getX(), body.getY());
 
-		Probe probe = new Probe(probeName, coordinate, body.getDirection());
+		Probe probe = createProbe(probeName, body);
 
 		service.addProbe(probe);
 		return report();
@@ -119,6 +115,13 @@ public class MissionRest {
 		throw new UnsupportedOperationException();
 	}
 
+	private Coordinate createCoordinate(CoordinateDTO dto) {
+		return new Coordinate(dto.getX(), dto.getY());
+	}
+
+	private Probe createProbe(String probeName, ProbeDTO dto) {
+		return new Probe(probeName, createCoordinate(dto), dto.getDirection());
+	}
 }
 
 class CommandsDTO {
