@@ -68,9 +68,11 @@ public class MissionRestTest {
 		// WHEN
 		mockMvc.perform(request).andDo(MockMvcResultHandlers.print())
 				// THEN
-				.andExpect(status().isCreated()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(jsonPath("$.maxCoordinate.x").value(10)).andExpect(jsonPath("$.maxCoordinate.y").value(15))
-				.andExpect(jsonPath("$.deployedProbes").isArray()).andExpect(jsonPath("$.deployedProbes").isEmpty());
+				.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("MethodArgumentNotValidException"))
+				.andExpect(jsonPath("$.detailedMessage").value("Required field not provided"))
+				.andExpect(jsonPath("$.fieldErros").isArray()).andExpect(jsonPath("$.fieldErros[0].field").value("y"))
+				.andExpect(jsonPath("$.fieldErros[0].message").value("may not be null"));
 	}
 
 	@Test
@@ -118,22 +120,77 @@ public class MissionRestTest {
 	}
 
 	@Test
-	public void deveDarErroPoisPousouDuasSondasComMesmoNome() {
-		Assert.fail();
+	public void deveDarErroPoisPousouDuasSondasComMesmoNome() throws Exception {
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String content1 = "{\"x\": 1, \"y\":1, \"direction\": \"NORTH\"}";
+		String content2 = "{\"x\": 2, \"y\":2, \"direction\": \"SOUTH\"}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request1 = post("/mission/sendProbe/{probeName}", "probe1").content(content1)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request2 = post("/mission/sendProbe/{probeName}", "probe1").content(content2)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		ResultActions actions1 = mockMvc.perform(request1).andDo(MockMvcResultHandlers.print());
+		ResultActions actions2 = mockMvc.perform(request2).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		actions1.andExpect(status().isCreated());
+
+		actions2.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("AlreadyExistProbeException"))
+				.andExpect(jsonPath("$.detailedMessage").value("Probe already exists"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
+
 	}
 
 	@Test
-	public void deveDarErroPoisSondaNaoTemDirecao() {
-		Assert.fail();
+	public void deveDarErroPoisSondaNaoTemDirecao() throws Exception {
+
+		// GIVEN
+		String contentMission = "{\"x\": 10, \"y\":15}";
+		String content1 = "{\"x\": 1, \"y\":1}";
+
+		MockHttpServletRequestBuilder requestMission = post("/mission/startMission").content(contentMission)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		MockHttpServletRequestBuilder request1 = post("/mission/sendProbe/{probeName}", "probe1").content(content1)
+				.contentType(MediaType.APPLICATION_JSON_VALUE);
+
+		// WHEN
+		mockMvc.perform(requestMission);
+		ResultActions actions1 = mockMvc.perform(request1).andDo(MockMvcResultHandlers.print());
+
+		// THEN
+		actions1.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("MethodArgumentNotValidException"))
+				.andExpect(jsonPath("$.detailedMessage").value("Required field not provided"))
+				.andExpect(jsonPath("$.fieldErros").isArray())
+				.andExpect(jsonPath("$.fieldErros[0].field").value("direction"))
+				.andExpect(jsonPath("$.fieldErros[0].message").value("may not be null"));
 	}
 
 	@Test
 	@DirtiesContext(methodMode = MethodMode.BEFORE_METHOD)
 	public void deveDarErroPoisNaoHaMissaoIniciada() throws Exception {
+		// GIVEN
+		MockHttpServletRequestBuilder request = MockMvcRequestBuilders.get("/mission/report");
 
-		mockMvc.perform(MockMvcRequestBuilders.get("/mission/report")).andDo(MockMvcResultHandlers.print());
+		// WHEN
+		ResultActions response = mockMvc.perform(request).andDo(MockMvcResultHandlers.print());
 
-		Assert.fail();
+		// THEN
+		response.andExpect(status().isBadRequest()).andExpect(content().contentType(MediaType.APPLICATION_JSON))
+				.andExpect(jsonPath("$.exception").value("MissionNotStartedException"))
+				.andExpect(jsonPath("$.detailedMessage")
+						.value("Mission not started. First call POST /mission/startMission"))
+				.andExpect(jsonPath("$.fieldErros").isEmpty());
 	}
 
 	@Test

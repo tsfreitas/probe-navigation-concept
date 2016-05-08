@@ -72,7 +72,7 @@ public class MissionRest {
 	 */
 	@RequestMapping(value = "sendProbe/{probeName}", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
-	public MissionControl sendProbe(@PathVariable String probeName, @RequestBody ProbeDTO body)
+	public MissionControl sendProbe(@PathVariable String probeName, @Valid @RequestBody ProbeDTO body)
 			throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
 		Coordinate coordinate = new Coordinate(body.getX(), body.getY());
 

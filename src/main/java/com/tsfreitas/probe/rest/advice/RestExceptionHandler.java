@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.tsfreitas.probe.exception.AlreadyExistProbeException;
 import com.tsfreitas.probe.exception.MissionNotStartedException;
 
 @ControllerAdvice(annotations = RestController.class)
@@ -21,7 +22,15 @@ public class RestExceptionHandler {
 	@ResponseBody
 	public ErrorInfo missionNotStartedException(MissionNotStartedException ex) {
 		String message = "Mission not started. First call POST /mission/startMission";
-		return new ErrorInfo(ex.toString(), message);
+		return new ErrorInfo("MissionNotStartedException", message);
+	}
+
+	@ResponseStatus(HttpStatus.BAD_REQUEST)
+	@ExceptionHandler(AlreadyExistProbeException.class)
+	@ResponseBody
+	public ErrorInfo alreadyExistProbeException(AlreadyExistProbeException ex) {
+		String message = "Probe already exists";
+		return new ErrorInfo("AlreadyExistProbeException", message);
 	}
 
 	@ResponseStatus(HttpStatus.BAD_REQUEST)
@@ -29,7 +38,7 @@ public class RestExceptionHandler {
 	@ResponseBody
 	public ErrorInfo requiredFieldNotFilled(MethodArgumentNotValidException ex) {
 		String message = "Required field not provided";
-		ErrorInfo ei = new ErrorInfo(ex.toString(), message);
+		ErrorInfo ei = new ErrorInfo("MethodArgumentNotValidException", message);
 
 		ex.getBindingResult().getFieldErrors().forEach(
 				fieldError -> ei.addFieldError(new FieldError(fieldError.getField(), fieldError.getDefaultMessage())));
