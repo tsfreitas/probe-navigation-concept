@@ -1,8 +1,6 @@
 package com.tsfreitas.probe.rest;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -23,6 +21,9 @@ import com.tsfreitas.probe.exception.ProbeNotExistsException;
 import com.tsfreitas.probe.model.Coordinate;
 import com.tsfreitas.probe.model.MissionControl;
 import com.tsfreitas.probe.model.Probe;
+import com.tsfreitas.probe.rest.dto.CommandsDTO;
+import com.tsfreitas.probe.rest.dto.CoordinateDTO;
+import com.tsfreitas.probe.rest.dto.ProbeDTO;
 import com.tsfreitas.probe.service.MissionControlService;
 
 @RestController
@@ -56,7 +57,7 @@ public class MissionRest {
 	@RequestMapping(value = "startMission", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
 	@ResponseStatus(HttpStatus.CREATED)
 	public MissionControl startMission(@Valid @RequestBody CoordinateDTO body) throws MissionNotStartedException {
-		service.registerMission(createCoordinate(body));
+		service.registerMission(body.createCoordinate());
 
 		return report();
 	}
@@ -84,9 +85,8 @@ public class MissionRest {
 	public MissionControl sendProbe(@PathVariable String probeName, @Valid @RequestBody ProbeDTO body)
 			throws CrashException, MissionNotStartedException, AlreadyExistProbeException {
 
-		Probe probe = createProbe(probeName, body);
+		service.addProbe(body.createProbe(probeName));
 
-		service.addProbe(probe);
 		return report();
 	}
 
@@ -163,53 +163,6 @@ public class MissionRest {
 		Integer y = Integer.valueOf(split[1].trim());
 
 		return new Coordinate(x, y);
-	}
-
-	private Coordinate createCoordinate(CoordinateDTO dto) {
-		return new Coordinate(dto.getX(), dto.getY());
-	}
-
-	private Probe createProbe(String probeName, ProbeDTO dto) {
-		return new Probe(probeName, createCoordinate(dto), dto.getDirection());
-	}
-}
-
-class CommandsDTO {
-	@NotNull
-	private String commands;
-
-	public String getCommands() {
-		return commands;
-	}
-}
-
-class CoordinateDTO {
-
-	@NotNull
-	@Min(0)
-	private Integer x;
-
-	@NotNull
-	@Min(0)
-	private Integer y;
-
-	public Integer getX() {
-		return x;
-	}
-
-	public Integer getY() {
-		return y;
-	}
-
-}
-
-class ProbeDTO extends CoordinateDTO {
-
-	@NotNull
-	private DIRECTION direction;
-
-	public DIRECTION getDirection() {
-		return direction;
 	}
 
 }
