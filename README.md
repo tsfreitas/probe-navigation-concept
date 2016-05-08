@@ -105,35 +105,36 @@ Exercício de simulador de sonda. O sistema deverá movimentar uma sonda dentro 
     * **Code:** `400`<br/>
       **Content:**
 
-      ```json
-      {
+    ```json
+    {
         "exception": "AlreadyExistProbeException",
         "detailedMessage": "Probe already exists",
         "fieldErros": []
-      }
-      ```
+    }
+    ```
 
-      ```json
-       {
-         "exception": "MethodArgumentNotValidException",
-         "detailedMessage": "Required field not provided",
-         "fieldErros": [
-           {
-             "field": "direction",
-             "message": "não pode ser nulo"
-           }
-         ]
-       }
-      ```
+    ```json
+    {
+        "exception": "MethodArgumentNotValidException",
+        "detailedMessage": "Required field not provided",
+        "fieldErros": [
+        {
+            "field": "direction",
+            "message": "não pode ser nulo"
+        }
+        ]
+    }
+    ```
 
     * **Code:** `500`<br/>
       **Content:**
-      ```json
-      {
+    ```json
+    {
         "exception": "CrashException",
         "detailedMessage": "The probe has crashed. Abort mission!!",
         "fieldErros": []
-      }
+    }
+    ```
 
 
 ---
@@ -198,8 +199,10 @@ Exercício de simulador de sonda. O sistema deverá movimentar uma sonda dentro 
          ]
        }
       ```
+
     * **Code:** `500`<br/>
       **Content:**
+
       ```json
       {
         "exception": "CrashException",
@@ -224,6 +227,7 @@ Exercício de simulador de sonda. O sistema deverá movimentar uma sonda dentro 
 
     * **Code:** `200` <br/>
       **Content:**
+
       ```json
       {
           "maxCoordinate": {
@@ -259,6 +263,7 @@ Exercício de simulador de sonda. O sistema deverá movimentar uma sonda dentro 
 
     * **Code:** `200` <br/>
       **Content:**
+
       ```json
       {
           "maxCoordinate": {
@@ -299,6 +304,7 @@ MMRMMRMRRM
 
     * **Code:** `200` <br/>
       **Content:**
+
       ```json
       {
         "maxCoordinate": {
@@ -340,6 +346,7 @@ MMRMMRMRRM
       ```
     * **Code:** `500`<br/>
       **Content:**
+
       ```json
       {
         "exception": "CrashException",
